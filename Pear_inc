@@ -1,0 +1,63 @@
+
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+
+# Load the dataset
+df = pd.read_csv("dataset.csv")
+
+# Visualize the data
+sns.pairplot(df, hue='isVirus', markers=["o", "s"])
+plt.show()
+
+# Clean up the data
+# Impute missing values with mean
+df.fillna(df.mean(), inplace=True)
+
+# Visualize the cleaned data
+sns.pairplot(df, hue='isVirus', markers=["o", "s"])
+plt.show()
+
+# Create features and labels
+X = df.drop('isVirus', axis=1)
+y = df['isVirus']
+
+# Split the data into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create a simple model
+model = RandomForestClassifier()
+model.fit(X_train, y_train)
+
+# Evaluate the model
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+conf_matrix = confusion_matrix(y_test, y_pred)
+class_report = classification_report(y_test, y_pred)
+
+# Print evaluation metrics
+print("Accuracy:", accuracy)
+print("Confusion Matrix:\n", conf_matrix)
+print("Classification Report:\n", class_report)
+
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix, annot=True, cmap="Blues", fmt="d", cbar=False)
+plt.xlabel('Predicted Labels')
+plt.ylabel('True Labels')
+plt.title('Confusion Matrix')
+plt.show()
+
+# Visualize Feature Importances
+feature_importances = pd.Series(model.feature_importances_, index=X.columns)
+feature_importances.sort_values(ascending=False, inplace=True)
+plt.figure(figsize=(10, 6))
+sns.barplot(x=feature_importances, y=feature_importances.index, palette="viridis")
+plt.xlabel('Feature Importance')
+plt.ylabel('Features')
+plt.title('Feature Importances')
+plt.show()
+
